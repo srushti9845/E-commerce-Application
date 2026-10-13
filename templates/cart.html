@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Your cart{% endblock %}
+{% block content %}
+<div class="page-heading"><p class="eyebrow">YOUR BAG</p><h1>Shopping cart</h1><p class="muted">Review your items before checkout.</p></div>
+{% if items %}
+<div class="cart-layout">
+  <form class="cart-items panel" method="post" action="{{ url_for('update_cart') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% for item in items %}
+    <div class="cart-item">
+      <div class="mini-product">{{ item.product.name[0] }}</div>
+      <div class="cart-item-main"><h3>{{ item.product.name }}</h3><p class="muted">₹{{ "%.2f"|format(item.product.price) }} each</p>
+        <div class="quantity-row"><label for="qty-{{ item.product.id }}">Qty</label><input id="qty-{{ item.product.id }}" type="number" name="{{ item.product.id }}" min="0" max="{{ item.product.stock }}" value="{{ item.quantity }}"></div>
+      </div>
+      <div class="cart-item-end"><strong>₹{{ "%.2f"|format(item.line_total) }}</strong>
+        <button class="text-danger" type="submit" formaction="{{ url_for('remove_from_cart', product_id=item.product.id) }}" formmethod="post" name="csrf_token" value="{{ csrf_token() }}">Remove</button>
+      </div>
+    </div>
+    {% endfor %}
+    <button class="button secondary" type="submit">Update cart</button>
+    <p class="small-muted">Set quantity to 0 and select Update cart to remove an item.</p>
+  </form>
+  <aside class="summary-card">
+    <h2>Order summary</h2><div class="summary-line"><span>Subtotal</span><strong>₹{{ "%.2f"|format(total) }}</strong></div>
+    <div class="summary-line"><span>Shipping</span><strong>Free</strong></div>
+    <div class="summary-total"><span>Total</span><strong>₹{{ "%.2f"|format(total) }}</strong></div>
+    <a class="button primary full-width" href="{{ url_for('checkout') }}">Continue to checkout</a>
+    <a class="continue-link" href="{{ url_for('index') }}">← Continue shopping</a>
+  </aside>
+</div>
+{% else %}
+<div class="empty-state"><div class="empty-icon">🛍</div><h2>Your cart is empty</h2><p>Find something you like and add it here.</p><a class="button primary" href="{{ url_for('index') }}">Browse products</a></div>
+{% endif %}
+{% endblock %}

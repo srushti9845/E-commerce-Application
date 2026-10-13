@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}My orders{% endblock %}
+{% block content %}
+<div class="page-heading"><p class="eyebrow">YOUR PURCHASES</p><h1>Order tracking</h1><p class="muted">Check the latest status of your orders.</p></div>
+{% if orders %}
+<div class="orders-list">
+  {% for order in orders %}
+  <article class="order-card">
+    <div class="order-top"><div><p class="eyebrow">ORDER #{{ order.id }}</p><h2>₹{{ "%.2f"|format(order.total) }}</h2><p class="muted">Placed {{ order.created_at }}</p></div><span class="status status-{{ order.status|lower }}">{{ order.status }}</span></div>
+    <div class="order-products">
+      {% for item in order_items[order.id] %}
+      <div class="summary-line"><span>{{ item.product_name }} × {{ item.quantity }}</span><strong>₹{{ "%.2f"|format(item.price_each * item.quantity) }}</strong></div>
+      {% endfor %}
+    </div>
+    <div class="tracking-steps">
+      {% for step in ["Placed", "Processing", "Shipped", "Delivered"] %}
+        <div class="tracking-step {% if step == order.status %}current{% elif order.status in ['Processing', 'Shipped', 'Delivered'] and step == 'Placed' or order.status in ['Shipped', 'Delivered'] and step == 'Processing' or order.status == 'Delivered' and step == 'Shipped' %}complete{% endif %}">
+          <span class="step-dot"></span><small>{{ step }}</small>
+        </div>
+      {% endfor %}
+    </div>
+    {% if order.status == "Cancelled" %}<p class="cancel-note">This order has been cancelled.</p>{% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state"><div class="empty-icon">📦</div><h2>No orders yet</h2><p>Your orders will appear here after checkout.</p><a class="button primary" href="{{ url_for('index') }}">Start shopping</a></div>
+{% endif %}
+{% endblock %}

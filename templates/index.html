@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">WELCOME TO SRISH COLLECTIONS</p>
+    <h1>Find your new<br><span>everyday favorites.</span></h1>
+    <p class="hero-copy">Explore a thoughtfully picked collection of style, accessories, and useful finds for every day.</p>
+    <a class="button primary" href="#catalog">Explore the collection</a>
+  </div>
+  <div class="hero-art" aria-hidden="true"><span>✦</span><div class="hero-circle">S</div><span>＋</span></div>
+</section>
+
+<section id="catalog" class="section-heading">
+  <div><p class="eyebrow">THE SRISH COLLECTION</p><h2>Explore products</h2></div>
+  <form class="search-form" method="get" action="{{ url_for('index') }}">
+    <input name="q" value="{{ search }}" placeholder="Search products..." aria-label="Search products">
+    <button class="button primary" type="submit">Search</button>
+  </form>
+</section>
+
+{% if products_count %}
+<nav class="category-nav" aria-label="Shop by category">
+  {% for category, category_products in products_by_category.items() %}
+    {% if category_products %}
+      <a href="#category-{{ loop.index }}">{{ category }} <span>{{ category_products|length }}</span></a>
+    {% endif %}
+  {% endfor %}
+  {% if search %}<a class="show-all-link" href="{{ url_for('index') }}">Show all products</a>{% endif %}
+</nav>
+
+{% for category, category_products in products_by_category.items() %}
+  {% if category_products %}
+  <section class="category-section" id="category-{{ loop.index }}">
+    <div class="category-heading">
+      <div><p class="eyebrow">CURATED FOR YOU</p><h2>{{ category }}</h2></div>
+      <span class="category-count">{{ category_products|length }} finds</span>
+    </div>
+    <div class="product-grid">
+      {% for product in category_products %}
+      <article class="product-card">
+        <div class="product-image-wrap">
+          {% if product.image_url %}
+            <img class="product-image" src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'">
+          {% endif %}
+          <div class="image-fallback" {% if product.image_url %}style="display:none"{% endif %}>{{ product.name[0] }}</div>
+          {% if product.stock == 0 %}<span class="stock-badge sold-out">Sold out</span>{% endif %}
+        </div>
+        <div class="product-info">
+          <span class="product-category">{{ product.category }}</span>
+          <h3>{{ product.name }}</h3>
+          <p class="product-description">{{ product.description }}</p>
+          <div class="product-bottom">
+            <div><strong class="price">₹{{ "%.2f"|format(product.price) }}</strong><small>{{ product.stock }} in stock</small></div>
+            <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="button primary add-button" {% if product.stock == 0 %}disabled{% endif %}>+ Add</button>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{% endfor %}
+{% else %}
+<div class="empty-state"><h3>No products found</h3><p>Try a different search term.</p><a href="{{ url_for('index') }}">Show all products</a></div>
+{% endif %}
+{% endblock %}

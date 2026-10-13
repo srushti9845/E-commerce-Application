@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Srish Collections{% endblock %} | Srish Collections</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('index') }}">Srish Collections<span>.</span></a>
+    <nav>
+      <a href="{{ url_for('index') }}">Products</a>
+      <a href="{{ url_for('cart') }}">Cart <span class="cart-count">{{ cart_count }}</span></a>
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('orders') }}">My Orders</a>
+        {% if session.get('role') == 'admin' %}<a href="{{ url_for('admin') }}">Admin</a>{% endif %}
+        <span class="nav-user">Hi, {{ session.get('name') }}</span>
+        <form class="inline-form" method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="link-button" type="submit">Logout</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a class="nav-cta" href="{{ url_for('register') }}">Create account</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-list" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <p>Srish Collections · Everyday finds, thoughtfully chosen</p>
+    <p class="small-muted">Demo checkout only — no real payment is collected.</p>
+  </footer>
+</body>
+</html>

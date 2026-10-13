@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<div class="page-heading"><p class="eyebrow">ALMOST THERE</p><h1>Checkout</h1><p class="muted">Confirm your demo order.</p></div>
+<div class="checkout-layout">
+  <section class="panel">
+    <h2>Order items</h2>
+    {% for product, quantity in items %}
+    <div class="summary-line"><span>{{ product.name }} × {{ quantity }}</span><strong>₹{{ "%.2f"|format(product.price * quantity) }}</strong></div>
+    {% endfor %}
+    <div class="summary-total"><span>Total</span><strong>₹{{ "%.2f"|format(total) }}</strong></div>
+  </section>
+  <section class="summary-card">
+    <h2>Delivery & confirmation</h2>
+    <p class="muted">This learning project simulates checkout. It does not collect an address or process real payments.</p>
+    <div class="secure-note">✓ Stock will be checked again before the order is saved.</div>
+    <form method="post" data-confirm="Place this demo order?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="button primary full-width" type="submit">Place order · ₹{{ "%.2f"|format(total) }}</button>
+    </form>
+    <a class="continue-link" href="{{ url_for('cart') }}">← Return to cart</a>
+  </section>
+</div>
+{% endblock %}

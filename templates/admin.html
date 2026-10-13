@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+<div class="page-heading"><p class="eyebrow">STORE CONTROL</p><h1>Admin dashboard</h1><p class="muted">Manage products, inventory, and customer orders.</p></div>
+
+<section class="admin-section panel">
+  <div class="section-heading compact"><div><p class="eyebrow">INVENTORY</p><h2>Add a product</h2></div><span class="pill">{{ products|length }} products</span></div>
+  <form class="admin-add-form" method="post" action="{{ url_for('add_product') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Product name<input name="name" required maxlength="150" placeholder="Product name"></label>
+    <label>Category<select name="category" required>{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
+    <label>Price (₹)<input type="number" name="price" min="0" step="0.01" required placeholder="999"></label>
+    <label>Stock<input type="number" name="stock" min="0" step="1" required placeholder="10"></label>
+    <label>Image URL (optional)<input name="image_url" type="url" placeholder="https://..."></label>
+    <label class="wide-field">Description<textarea name="description" rows="2" placeholder="Short product description"></textarea></label>
+    <button class="button primary" type="submit">+ Add product</button>
+  </form>
+</section>
+
+<section class="admin-section panel">
+  <div class="section-heading compact"><div><p class="eyebrow">PRODUCTS</p><h2>Manage inventory</h2></div></div>
+  {% if products %}
+  <div class="table-wrap"><table><thead><tr><th>Product</th><th>Category</th><th>Price (₹)</th><th>Stock</th><th>Save changes</th><th>Delete</th></tr></thead><tbody>
+  {% for product in products %}
+  <tr>
+    <td><form id="edit-{{ product.id }}" method="post" action="{{ url_for('edit_product', product_id=product.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form><input form="edit-{{ product.id }}" name="name" value="{{ product.name }}" required aria-label="Product name"><textarea form="edit-{{ product.id }}" name="description" rows="2" aria-label="Description">{{ product.description }}</textarea><input form="edit-{{ product.id }}" name="image_url" value="{{ product.image_url }}" type="url" aria-label="Image URL" placeholder="Image URL"></td>
+    <td><select form="edit-{{ product.id }}" name="category" aria-label="Product category">{% for category in categories %}<option value="{{ category }}" {% if category == product.category %}selected{% endif %}>{{ category }}</option>{% endfor %}</select></td>
+    <td><input form="edit-{{ product.id }}" name="price" type="number" min="0" step="0.01" value="{{ '%.2f'|format(product.price) }}" required aria-label="Price"></td>
+    <td><input form="edit-{{ product.id }}" name="stock" type="number" min="0" step="1" value="{{ product.stock }}" required aria-label="Stock"></td>
+    <td><button form="edit-{{ product.id }}" class="button secondary small-button" type="submit">Save</button></td>
+    <td><form method="post" action="{{ url_for('delete_product', product_id=product.id) }}" data-confirm="Delete {{ product.name }}?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button danger small-button" type="submit">Delete</button></form></td>
+  </tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% else %}<p>No products yet.</p>{% endif %}
+</section>
+
+<section class="admin-section panel">
+  <div class="section-heading compact"><div><p class="eyebrow">FULFILMENT</p><h2>Customer orders</h2></div><span class="pill">{{ orders|length }} orders</span></div>
+  {% if orders %}
+  <div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Update</th></tr></thead><tbody>
+  {% for order in orders %}
+  <tr><td>#{{ order.id }}<small>{{ order.created_at }}</small></td><td>{{ order.customer_name }}<small>{{ order.customer_email }}</small></td><td>₹{{ "%.2f"|format(order.total) }}</td><td><span class="status status-{{ order.status|lower }}">{{ order.status }}</span></td>
+    <td><form class="status-form" method="post" action="{{ url_for('update_order_status', order_id=order.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><select name="status" aria-label="Order status">
+      {% for status in statuses %}<option value="{{ status }}" {% if status == order.status %}selected{% endif %}>{{ status }}</option>{% endfor %}
+    </select><button class="button secondary small-button">Update</button></form></td></tr>
+  {% endfor %}
+  </tbody></table></div>
+  {% else %}<p>No orders have been placed yet.</p>{% endif %}
+</section>
+{% endblock %}
